@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>Netfilly Visitor Counter</title>
+  <title>عداد الزوار</title>
   <style>
     body { font-family: Arial; text-align: center; margin-top: 100px; }
     #count { font-size: 48px; color: red; }
@@ -15,21 +15,29 @@
   <script>
     const visitorKey = 'netfilly-visited';
     const apiURL = 'https://api.countapi.xyz';
+    const namespace = 'netfilly_unique_visitor';
+    const key = 'main';
 
     async function initCounter() {
-      const namespace = 'netfilly_unique_visitor';
-      const key = 'main';
+      try {
+        // التهيئة - إذا المفتاح ما كان موجود
+        await fetch(`${apiURL}/create?namespace=${namespace}&key=${key}&value=0`, { method: 'GET' });
 
-      // لو ما زار الموقع من قبل:
-      if (!localStorage.getItem(visitorKey)) {
-        await fetch(`${apiURL}/hit/${namespace}/${key}`);
-        localStorage.setItem(visitorKey, 'true');
+        // عداد الزيارات (مرة وحدة لكل جهاز)
+        if (!localStorage.getItem(visitorKey)) {
+          await fetch(`${apiURL}/hit/${namespace}/${key}`);
+          localStorage.setItem(visitorKey, 'true');
+        }
+
+        // قراءة العدد النهائي
+        const res = await fetch(`${apiURL}/get/${namespace}/${key}`);
+        const data = await res.json();
+
+        document.getElementById('count').textContent = data.value.toLocaleString();
+      } catch (err) {
+        document.getElementById('count').textContent = 'خطأ في الاتصال';
+        console.error('❌ خطأ في تحميل العداد:', err);
       }
-
-      // احصل على العدد الحالي
-      const res = await fetch(`${apiURL}/get/${namespace}/${key}`);
-      const data = await res.json();
-      document.getElementById('count').textContent = data.value.toLocaleString();
     }
 
     initCounter();

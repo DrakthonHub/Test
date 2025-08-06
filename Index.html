@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Netfilly Visitor Counter</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 100px; }
+    #count { font-size: 48px; color: red; }
+  </style>
+</head>
+<body>
+  <h1>عدد الزوار الفريدين 👥</h1>
+  <div id="count">جارٍ التحميل...</div>
+
+  <script>
+    const visitorKey = 'netfilly-visited';
+    const apiURL = 'https://api.countapi.xyz';
+
+    async function initCounter() {
+      const namespace = 'netfilly_unique_visitor';
+      const key = 'main';
+
+      // لو ما زار الموقع من قبل:
+      if (!localStorage.getItem(visitorKey)) {
+        await fetch(`${apiURL}/hit/${namespace}/${key}`);
+        localStorage.setItem(visitorKey, 'true');
+      }
+
+      // احصل على العدد الحالي
+      const res = await fetch(`${apiURL}/get/${namespace}/${key}`);
+      const data = await res.json();
+      document.getElementById('count').textContent = data.value.toLocaleString();
+    }
+
+    initCounter();
+  </script>
+</body>
+</html>

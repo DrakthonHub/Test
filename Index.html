@@ -1,46 +1,34 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>عداد الزوار</title>
+  <meta charset="UTF-8" />
+  <title>عداد زوار Neon على Netlify</title>
   <style>
-    body { font-family: Arial; text-align: center; margin-top: 100px; }
-    #count { font-size: 48px; color: red; }
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; }
+    #count { font-size: 48px; color: #2ecc71; }
+    #error { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
   <h1>عدد الزوار الفريدين 👥</h1>
   <div id="count">جارٍ التحميل...</div>
+  <div id="error"></div>
 
   <script>
-    const visitorKey = 'netfilly-visited';
-    const apiURL = 'https://api.countapi.xyz';
-    const namespace = 'netfilly_unique_visitor';
-    const key = 'main';
-
-    async function initCounter() {
+    async function fetchVisitorCount() {
       try {
-        // التهيئة - إذا المفتاح ما كان موجود
-        await fetch(`${apiURL}/create?namespace=${namespace}&key=${key}&value=0`, { method: 'GET' });
-
-        // عداد الزيارات (مرة وحدة لكل جهاز)
-        if (!localStorage.getItem(visitorKey)) {
-          await fetch(`${apiURL}/hit/${namespace}/${key}`);
-          localStorage.setItem(visitorKey, 'true');
-        }
-
-        // قراءة العدد النهائي
-        const res = await fetch(`${apiURL}/get/${namespace}/${key}`);
+        const res = await fetch('/.netlify/functions/visitorCount');
+        if (!res.ok) throw new Error('فشل تحميل البيانات');
         const data = await res.json();
-
-        document.getElementById('count').textContent = data.value.toLocaleString();
-      } catch (err) {
-        document.getElementById('count').textContent = 'خطأ في الاتصال';
-        console.error('❌ خطأ في تحميل العداد:', err);
+        document.getElementById('count').textContent = data.uniqueVisitors.toLocaleString();
+        document.getElementById('error').textContent = '';
+      } catch (e) {
+        document.getElementById('count').textContent = 'خطأ في التحميل';
+        document.getElementById('error').textContent = e.message;
       }
     }
 
-    initCounter();
+    fetchVisitorCount();
   </script>
 </body>
 </html>
